@@ -10,7 +10,7 @@ import (
 
 func main() {
 	GOPATH := os.Getenv("GOPATH")
-	Project := "./"
+	Project := ""
 	configFile := "fingerprints.json"
 	defaultConfig := GOPATH + Project + configFile
 
