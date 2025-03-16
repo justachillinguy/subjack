@@ -1,19 +1,19 @@
 package main
 
 import (
+	_ "embed"
 	"flag"
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/haccer/subjack/subjack"
 )
 
-func main() {
-	GOPATH := os.Getenv("GOPATH")
-	Project := ""
-	configFile := "fingerprints.json"
-	defaultConfig := GOPATH + Project + configFile
+//go:embed fingerprints.json
+var configData string
 
+func main() {
 	o := subjack.Options{}
 
 	flag.StringVar(&o.Domain, "d", "", "Domain.")
@@ -24,7 +24,7 @@ func main() {
 	flag.BoolVar(&o.All, "a", false, "Find those hidden gems by sending requests to every URL. (Default: Requests are only sent to URLs with identified CNAMEs).")
 	flag.BoolVar(&o.Verbose, "v", false, "Display more information per each request.")
 	flag.StringVar(&o.Output, "o", "", "Output results to file (Subjack will write JSON if file ends with '.json').")
-	flag.StringVar(&o.Config, "c", defaultConfig, "Path to configuration file.")
+	flag.StringVar(&o.Config, "c", "", "Path to configuration file.")
 	flag.BoolVar(&o.Manual, "m", false, "Flag the presence of a dead record, but valid CNAME entry.")
 
 	flag.Parse()
@@ -37,6 +37,20 @@ func main() {
 	if flag.NFlag() == 0 {
 		flag.Usage()
 		os.Exit(1)
+	}
+
+	// If no config file is provided, write the embedded config to a temporary file
+	if o.Config == "" {
+		tempDir := os.TempDir()
+		tempFile := filepath.Join(tempDir, "fingerprints.json")
+
+		err := os.WriteFile(tempFile, []byte(configData), 0644)
+		if err != nil {
+			fmt.Println("Error writing embedded config to temp file:", err)
+			os.Exit(1)
+		}
+
+		o.Config = tempFile
 	}
 
 	subjack.Process(&o)
