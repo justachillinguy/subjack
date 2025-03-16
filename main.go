@@ -10,7 +10,7 @@ import (
 
 func main() {
 	GOPATH := os.Getenv("GOPATH")
-	Project := "/src/github.com/haccer/subjack/"
+	Project := "./"
 	configFile := "fingerprints.json"
 	defaultConfig := GOPATH + Project + configFile
 
